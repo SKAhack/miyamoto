@@ -33,9 +33,9 @@ var init = function() {
 }
 
 // SlackのOutgoingから来るメッセージ
-function doPost(e) {
+function doPost(params) {
   var miyamoto = init();
-  miyamoto.receiver.receiveMessage(e.parameters);
+  miyamoto.receiver.receiveMessage(params);
 }
 
 // Time-based triggerで実行
