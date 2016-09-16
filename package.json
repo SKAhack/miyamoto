@@ -1,6 +1,9 @@
 {
-  "dependencies": {
-    "gas-manager": "^0.4.3",
+  "scripts": {
+    "upload": "gapps upload"
+  },
+  "devDependencies": {
+    "node-google-apps-script": "^1.1.5",
     "qunit": "^0.7.5"
   }
 }
