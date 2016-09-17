@@ -76,10 +76,10 @@ loadGSTimesheets = function () {
   };
 
   GSTimesheets.prototype.get = function(username, date) {
-    var t = date.getTime();
+    var t = DateUtils.toDate(date).getTime();
     var vs = this.getAll();
     var row = _.find(vs, function(v) {
-      return v.date.getTime() == t && v.user == username;
+      return DateUtils.toDate(v.date).getTime() == t && v.user == username;
     });
 
     if(!row) {
@@ -159,8 +159,7 @@ loadGSTimesheets = function () {
 
   // 休みの曜日を数字で返す
   GSTimesheets.prototype.getDayOff = function(username) {
-    var sheet = this._getSheet(username);
-    return DateUtils.parseWday(sheet.getRange("B2").getValue());
+    return DateUtils.parseWday(this.sheet.getRange("B2").getValue());
   };
 
   return GSTimesheets;

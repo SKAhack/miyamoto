@@ -9,9 +9,12 @@ loadTestSuite = function() {
     var spreadsheetId = global_settings.get('spreadsheet');
     this.spreadsheet = SpreadsheetApp.openById(spreadsheetId);
 
+    DateUtils.now(new Date(2014,0,2,12,34,0));
+
     var res = true;
-    res = res && this.testSpreadsheet(sheetname);
-    res = res && this.testUsers(userSheetname);
+    // res = res && this.testUsers();
+    res = res && this.testSpreadsheet();
+    // res = res && this.testTimesheet();
 
     if(!res) {
       throw 'fail'
@@ -25,12 +28,12 @@ loadTestSuite = function() {
     }
   }
 
-  TestSuite.prototype.resetSpreadsheet = function(sheetname) {
+  TestSuite.prototype.resetSpreadsheet = function() {
     this.resetSheet(sheetname);
   };
 
-  TestSuite.prototype.resetUser = function(sheetname) {
-    this.resetSheet(sheetname);
+  TestSuite.prototype.resetUser = function() {
+    this.resetSheet(userSheetname);
   };
 
   TestSuite.prototype.setFixture = function(storage) {
@@ -47,8 +50,8 @@ loadTestSuite = function() {
     });
   };
 
-  TestSuite.prototype.testSpreadsheet = function(sheetname) {
-    this.resetSpreadsheet(sheetname);
+  TestSuite.prototype.testSpreadsheet = function() {
+    this.resetSpreadsheet();
     this.resetUser();
 
     var settings = new GSProperties(this.spreadsheet);
@@ -100,12 +103,18 @@ loadTestSuite = function() {
       Logger.log('testSpreadsheet: ' + v + ' !== ["foo", "bar", "baz"]');
     }
 
+    v = storage.getDayOff('foo');
+    if(!_.isEqual(v, [0, 6])) {
+      res = false;
+      Logger.log('testSpreadsheet: ' + v + ' !== [0, 6]');
+    }
+
     return res;
   };
 
   TestSuite.prototype.testUsers = function(sheetname) {
-    this.resetUser(sheetname);
-    users = new Users(this.spreadsheet, sheetname);
+    this.resetUser();
+    users = new Users(this.spreadsheet, userSheetname);
 
     var res = true;
     var v = users.get('foo');
@@ -122,7 +131,7 @@ loadTestSuite = function() {
     }
 
     users.set('foo');
-    var sheet = this.spreadsheet.getSheetByName(sheetname);
+    var sheet = this.spreadsheet.getSheetByName(userSheetname);
     v = _.filter(sheet.getRange('A3:A' + sheet.getLastRow()).getValues(), function(v) {
       return v[0] == 'foo';
     });
@@ -140,6 +149,104 @@ loadTestSuite = function() {
 
     return res;
   };
+
+  TestSuite.prototype.testTimesheet = function() {
+    var self = this;
+    var settings = new GSProperties(this.spreadsheet);
+    var users, storage, slack, timesheets;
+
+    var res = true;
+
+    var test = function(callback) {
+      self.resetSpreadsheet();
+      self.resetUser();
+
+      users = new Users(self.spreadsheet, userSheetname);
+      storage = new GSTimesheets(self.spreadsheet, users, settings, sheetname);
+      slack = getSlackMock();
+      timesheets = new Timesheets(storage, settings, slack);
+
+      callback();
+    };
+
+    var msgTest = function(user, msg, expect_messages) {
+      slack.clearMessages();
+      timesheets.receiveMessage(user, msg);
+      if (!_.isEqual(expect_messages, slack.messages)) {
+        res = false;
+        Logger.log('testTimesheet: '+user+":"+msg + ' ' + expect_messages +' != ' + slack.messages);
+      }
+    };
+
+    test(function(){
+      msgTest('test1', 'おはよう', [['出勤', 'test1', "2014/01/02 12:34"]]);
+      msgTest('test1', 'おはよう 4:56', [['出勤更新', 'test1', "2014/01/02 04:56"]]);
+      msgTest('test1', 'おはよう 4:56 2/3', [['出勤', 'test1', "2014/02/03 04:56"]]);
+    });
+
+    test(function(){
+      msgTest('test1', 'おはよう', [['出勤', 'test1', "2014/01/02 12:34"]]);
+      msgTest('test2', 'おはよう', [['出勤', 'test2', "2014/01/02 12:34"]]);
+    });
+
+    // 出勤時間の変更
+    test(function() {
+      msgTest('test1', 'おはよう', [['出勤', 'test1', "2014/01/02 12:34"]]);
+      msgTest('test2', 'おはよう', [['出勤', 'test2', "2014/01/02 12:34"]]);
+      msgTest('test1', 'おはよう', []);
+      msgTest('test1', 'おはよう 4:56', [['出勤更新', 'test1', "2014/01/02 04:56"]]);
+    });
+
+    test(function() {
+      msgTest('test3', 'おはよう 12:34 2/3', [['出勤', 'test3', "2014/02/03 12:34"]]);
+      msgTest('test1', 'おはよう', [['出勤', 'test1', "2014/01/02 12:34"]]);
+      msgTest('test1', '誰がいる？', [['出勤中', 'test1']]);
+      msgTest('test2', 'おはよう', [['出勤', 'test2', "2014/01/02 12:34"]]);
+      msgTest('test1', '誰がいる？', [['出勤中', 'test1, test2']]);
+    });
+
+    test(function() {
+      msgTest('test1', '今日はお休み', [['休暇', 'test1', "2014/01/02"]]);
+      msgTest('test2', '今日はお休み', [['休暇', 'test2', "2014/01/02"]]);
+      msgTest('test1', '明日はお休み', [['休暇', 'test1', "2014/01/03"]]);
+      msgTest('test1', '12/3はお休みでした', [['休暇', 'test1', "2013/12/03"]]);
+
+      msgTest('test1', 'お休みしません', []);
+      msgTest('test2', '今日はお休みしません', [['休暇取消', 'test2', "2014/01/02"]]);
+      msgTest('test1', '明日はお休みしません', [['休暇取消', 'test1', "2014/01/03"]]);
+    });
+
+    test(function() {
+      msgTest('test2', 'おはよう 12:34 2/3', [['出勤', 'test2', "2014/02/03 12:34"]]);
+      msgTest('test1', 'おはよう', [['出勤', 'test1', "2014/01/02 12:34"]]);
+      msgTest('test1', '__confirmSignIn__', [['出勤確認', ['test2']]]);
+    });
+
+    return res;
+  };
+
+  function getSlackMock() {
+    return {
+      messages: [],
+
+      template: function(label) {
+        message = [label];
+        for (var i = 1; i < arguments.length; i++) {
+          message.push(arguments[i]);
+        }
+        this.messages.push(message);
+      },
+
+      on: function() {},
+
+      send: function(msg) {},
+
+      // for testing
+      clearMessages: function() {
+        this.messages = [];
+      }
+    };
+  }
 
   return TestSuite;
 };
