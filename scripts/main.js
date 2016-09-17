@@ -8,6 +8,7 @@ var initLibraries = function() {
   if(typeof GSTimesheets === 'undefined') GSTimesheets = loadGSTimesheets();
   if(typeof Timesheets === 'undefined') Timesheets = loadTimesheets();
   if(typeof Slack === 'undefined') Slack = loadSlack();
+  if(typeof Users === 'undefined') Users = loadUsers();
 }
 
 var init = function() {
