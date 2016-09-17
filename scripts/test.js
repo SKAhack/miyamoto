@@ -43,7 +43,7 @@ loadTestSuite = function() {
       ['foo', new Date(2016, 9, 13), new Date(2016, 9, 13), new Date(2016, 9, 13), 'foobar5'],
     ];
     _.each(data, function(v) {
-      storage.set(v[0], v[1], { signIn: v[2], signOut: v[3], note: v[4] }, sheetname);
+      storage.set(v[0], v[1], { signIn: v[2], signOut: v[3], note: v[4] });
     });
   };
 
@@ -53,31 +53,31 @@ loadTestSuite = function() {
 
     var settings = new GSProperties(this.spreadsheet);
     var users = new Users(this.spreadsheet, userSheetname);
-    var storage = new GSTimesheets(this.spreadsheet, users, settings);
+    var storage = new GSTimesheets(this.spreadsheet, users, settings, sheetname);
 
     this.setFixture(storage);
 
     var res = true;
-    var v = storage.get('foo', new Date(2016, 9, 11), sheetname);
+    var v = storage.get('foo', new Date(2016, 9, 11));
     if(v.note !== 'foobar3') {
       res = false;
       Logger.log('testSpreadsheet: ' + v.note + ' !== foobar3');
     }
 
-    v = storage.get('bar', new Date(2016, 9, 10), sheetname);
+    v = storage.get('bar', new Date(2016, 9, 10));
     if(v.note !== 'foobar2') {
       res = false;
       Logger.log('testSpreadsheet: ' + v.note + ' !== foobar2');
     }
 
-    storage.set('baz', new Date(2016, 9, 10), {}, sheetname);
-    v = storage.get('baz', new Date(2016, 9, 10), sheetname);
+    storage.set('baz', new Date(2016, 9, 10), {});
+    v = storage.get('baz', new Date(2016, 9, 10));
     if(v.user !== 'baz') {
       res = false;
       Logger.log('testSpreadsheet: ' + v.user + ' !== baz');
     }
 
-    storage.set('baz', new Date(2016, 9, 10), {}, sheetname);
+    storage.set('baz', new Date(2016, 9, 10), {});
     var sheet = this.spreadsheet.getSheetByName(sheetname);
     v = _.filter(sheet.getRange('A6:A' + sheet.getLastRow()).getValues(), function(v) {
       return v[0] == 'baz'

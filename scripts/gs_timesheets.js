@@ -4,7 +4,9 @@
 loadGSTimesheets = function () {
   var offset = 6;
 
-  var GSTimesheets = function(spreadsheet, users, settings) {
+  var GSTimesheets = function(spreadsheet, users, settings, sheetname) {
+    if(!sheetname) sheetname = 'kintai';
+
     this.spreadsheet = spreadsheet;
     this.users = users;
     this.settings = settings;
@@ -22,6 +24,8 @@ loadGSTimesheets = function () {
         { name: 'DayOff', value: '土,日', comment: '← 月,火,水みたいに入力してください。アカウント停止のためには「全部」と入れてください。'},
       ]
     };
+
+    this.sheet = this._getSheet(sheetname);
   };
 
   GSTimesheets.prototype._getSheet = function(sheetname) {
@@ -71,45 +75,26 @@ loadGSTimesheets = function () {
     return this.keys;
   };
 
-  GSTimesheets.prototype.get = function(username, date, sheetname) {
-    if(!sheetname) sheetname = 'kintai';
-    var sheet = this._getSheet(sheetname);
-    var keys = this._getKeys(sheet);
+  GSTimesheets.prototype.get = function(username, date) {
     var t = date.getTime();
-    var lastRow = sheet.getLastRow();
-    if(lastRow <= 4) lastRow = offset;
-
-    var vs = sheet.getRange('A' + offset + ':E' + lastRow).getValues();
-    var rowNo = _.findIndex(vs, function(v) {
-      return v[keys['日付']] &&
-        v[keys['名前']] &&
-        v[keys['日付']].getTime() == t &&
-        v[keys['名前']] == username;
+    var vs = this.getAll();
+    var row = _.find(vs, function(v) {
+      return v.date.getTime() == t && v.user == username;
     });
 
-    if(rowNo < 0) {
+    if(!row) {
       return {};
     }
 
-    var row = vs[rowNo];
-
-    return {
-      rowNo: rowNo + offset,
-      user: username,
-      date: row[keys['日付']],
-      signIn: row[keys['出勤']],
-      signOut: row[keys['退勤']],
-      note: row[keys['ノート']],
-    };
+    return row;
   };
 
-  GSTimesheets.prototype.set = function(username, date, params, sheetname) {
-    if(!sheetname) sheetname = 'kintai';
+  GSTimesheets.prototype.set = function(username, date, params) {
     var user = this.findUserAndCreate(username);
-    var row = this.get(username, date, sheetname);
+    var row = this.get(username, date);
     _.extend(row, _.pick(params, 'signIn', 'signOut', 'note'));
 
-    var sheet = this._getSheet(sheetname);
+    var sheet = this.sheet;
     if(row.rowNo) {
       var rowNo = row.rowNo;
     } else {
@@ -121,6 +106,34 @@ loadGSTimesheets = function () {
       return v == null ? '' : v;
     });
     sheet.getRange("A"+rowNo+":"+String.fromCharCode(65 + this.scheme.columns.length - 1)+rowNo).setValues([data]);
+
+    // clear cache
+    this._all = undefined;
+  };
+
+  GSTimesheets.prototype.getAll = function() {
+    if(this._all) return this._all;
+
+    var lastRow = this.sheet.getLastRow();
+    if(lastRow <= 4) lastRow = offset;
+    var keys = this._getKeys(this.sheet);
+
+    var vs = this.sheet.getRange('A' + offset + ':E' + lastRow).getValues();
+    this._all = _.chain(vs)
+      .map(function(v, k) {
+        return {
+          rowNo: k + offset,
+          user: v[keys['名前']],
+          date: v[keys['日付']],
+          signIn: v[keys['出勤']],
+          signOut: v[keys['退勤']],
+          note: v[keys['ノート']],
+        };
+      })
+      .filter(function(v) { return v.name !== '' && v.date !== ''; })
+      .value();
+
+    return this._all;
   };
 
   GSTimesheets.prototype.findUserAndCreate = function(username) {

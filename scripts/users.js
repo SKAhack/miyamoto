@@ -41,7 +41,8 @@ loadUsers = function () {
       var rowNo = row.rowNo;
     }
     else {
-      var rowNo = getLastRow(this.sheet, offset) + 1;
+      var rowNo = getLastRow(this.sheet, offset);
+      if(this.getAll().length > 0) rowNo += 1;
     }
 
     var range = this.sheet.getRange('A' + rowNo);
@@ -59,7 +60,7 @@ loadUsers = function () {
 
     var rowNo = getLastRow(this.sheet, offset);
     var vs = this.sheet.getRange('A' + offset + ':A' + rowNo).getValues();
-    return _.chain(vs)
+    this._all = _.chain(vs)
       .map(function(v, k) {
         return {
           rowNo: k + offset,
@@ -68,6 +69,8 @@ loadUsers = function () {
       })
       .filter(function(v) { return v.name !== ''; })
       .value();
+
+    return this._all;
   };
 
   function getLastRow(sheet, offset) {
