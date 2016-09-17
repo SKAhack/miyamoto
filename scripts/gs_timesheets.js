@@ -151,9 +151,9 @@ loadGSTimesheets = function () {
   };
 
   GSTimesheets.prototype.getByDate = function(date) {
-    var self = this;
-    return _.map(this.getUsers(), function(username) {
-      return self.get(username, date);
+    var t = date.getTime();
+    return _.filter(this.getAll(), function(v) {
+      return v.date.getTime() == t;
     });
   };
 
