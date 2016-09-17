@@ -93,6 +93,13 @@ loadTestSuite = function() {
       Logger.log('testSpreadsheet: ' + v + ' !== ["foo", "bar", "baz"]');
     }
 
+    v = storage.getByDate(new Date(2016, 9, 10));
+    v = _.map(v, function(v) { return v.user; });
+    if(!_.isEqual(v, ['foo', 'bar', 'baz'])) {
+      res = false;
+      Logger.log('testSpreadsheet: ' + v + ' !== ["foo", "bar", "baz"]');
+    }
+
     return res;
   };
 
