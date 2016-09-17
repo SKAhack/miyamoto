@@ -8,6 +8,7 @@ var initLibraries = function() {
   if(typeof GSTimesheets === 'undefined') GSTimesheets = loadGSTimesheets();
   if(typeof Timesheets === 'undefined') Timesheets = loadTimesheets();
   if(typeof Slack === 'undefined') Slack = loadSlack();
+  if(typeof Users === 'undefined') Users = loadUsers();
 }
 
 var init = function() {
@@ -21,7 +22,8 @@ var init = function() {
     var settings = new GSProperties(spreadsheet);
     var template = new GSTemplate(spreadsheet);
     var slack = new Slack(settings.get('Slack Incoming URL'), template, settings);
-    var storage = new GSTimesheets(spreadsheet, settings);
+    var users = new Users(spreadsheet);
+    var storage = new GSTimesheets(spreadsheet, users, settings);
     var timesheets = new Timesheets(storage, settings, slack);
     return({
       receiver: slack,
@@ -33,9 +35,9 @@ var init = function() {
 }
 
 // SlackのOutgoingから来るメッセージ
-function doPost(e) {
+function doPost(params) {
   var miyamoto = init();
-  miyamoto.receiver.receiveMessage(e.parameters);
+  miyamoto.receiver.receiveMessage(params);
 }
 
 // Time-based triggerで実行

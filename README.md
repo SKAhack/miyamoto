@@ -4,7 +4,7 @@ Google Apps Scriptで書かれた、Slack上で動く勤怠管理Bot。
 
 Slackで下記の様につぶやくと、みやもとさんがGoogle Spreadsheetに勤怠を記録してくれます。
 
-![demo1](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/demo1.png)
+![demo1](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/demo1.png)
 
 
 ## 会話例
@@ -41,17 +41,17 @@ Slackで下記の様につぶやくと、みやもとさんがGoogle Spreadsheet
 - 最下部の「アプリを追加」を押してダイアログを開きます。
 - ダイアログの検索ボックスに「script」と入力してリストに出てきた「Google Apps Script」の「＋接続」ボタンを押します。
 
-![drive0](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/drive0.png)
+![drive0](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/drive0.png)
 
 
 - もう一度「作成」ボタンを押して「スクリプト」選択します。
 - 「スクリプトを作成」の下にある「空のプロジェクト」を選択します。
 - 新しいスクリプトを作る画面へ遷移するので、左上の「無題のプロジェクト」をクリックして、「Miyamoto-san」に変更します。
 
-![gas03](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/gas03.png)
+![gas03](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/gas03.png)
 
 
-- [main.gs](https://raw.githubusercontent.com/masuidrive/miyamoto/master/main.gs)をコピーして、ブラウザ内のエディタ部に貼り付けます。
+- [main.gs](https://raw.githubusercontent.com/SKAhack/miyamoto/master/main.gs)をコピーして、ブラウザ内のエディタ部に貼り付けます。
 - メニューから「ファイル」→「保存」を選択して保存します。
 - メニューの「ファイル」→「プロジェクトのプロパティ」を開いて「Time zone」を「東京」に合わせてください。
 
@@ -60,7 +60,7 @@ Slackで下記の様につぶやくと、みやもとさんがGoogle Spreadsheet
 
 - ツールバーの「関数を選択」から「setUp」を選び、左の再生ボタンを押します。
 
-![gas11](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/gas11.png)
+![gas11](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/gas11.png)
 
 - 権限の承認画面が出たら「承認する」を押してください。
 - Google Drive上に「Slack Timesheets」というSpreadsheetが生成されます。
@@ -73,12 +73,12 @@ Slackで下記の様につぶやくと、みやもとさんがGoogle Spreadsheet
 - 同時に「次のユーザーとしてアプリケーションを実行」を「自分」に変更します。
 - 登録完了後に出るウインドーの「現在のウェブアプリケーションのURL」をどこかにメモしておいてください。
 
-![gas20](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/gas20.png)
+![gas20](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/gas20.png)
 
 
 - 「全員（匿名ユーザを含む）」が見つからない場合は、https://admin.google.com/ から「Google Apps」→「ドライブ」を選択して、「共有設定」の「ユーザは組織外のユーザとファイルを共有できる」を選択します。
 
-![admin2](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/admin2.png)
+![admin2](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/admin2.png)
 
 
 
@@ -90,13 +90,13 @@ Slackで下記の様につぶやくと、みやもとさんがGoogle Spreadsheet
 
 - 左上のメニューから「Configure Integration」を選びます。
 
-![slack11](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/slack11.png)
+![slack11](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/slack11.png)
 
 - ページ下部の「DIY Integrations & Customizations」から「Outgoing WebHooks」を選びます。
 - 緑の「Add Outgoing Webhook」を押します。
 - 「Integration Settings」の「Channel」を「#timesheets」を選択し、「URL(s)」には「APIの公開」でメモをした「現在のウェブアプリケーションのURL」を入力し、「Save Integration」を押します。
 
-![slack13](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/slack13.png)
+![slack13](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/slack13.png)
 
 
 ### Slack Incomingの設定
@@ -105,11 +105,11 @@ Slackで下記の様につぶやくと、みやもとさんがGoogle Spreadsheet
 - ページ最下部の「Choose a channel...」から「#timesheets」を選択して、「Add Incoming WebHook」を選択します。
 - 遷移したページの「Your Unique Webhook URL」の下に書かれているURLをどこかにメモしておきます。
 
-![slack21](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/slack21.png)
+![slack21](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/slack21.png)
 
 - 「Integration Settings」右の「Expand」を押して、「change the name of your bot」をクリックし「miyamoto」を指定します。
 
-![slack22](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/slack22.png)
+![slack22](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/slack22.png)
 
 - 「miyamoto」以外の名前を指定する場合は、Spreadsheetの「_設定」の「無視するユーザ」にその名前を加えてください。
 
@@ -120,7 +120,7 @@ Slackで下記の様につぶやくと、みやもとさんがGoogle Spreadsheet
 - 下のタブから「_設定」を開き、「Slack Incoming URL」がある「B1」に「Slackへの設定」でメモした「Your Unique Webhook URL」を入力します。
 - このbotの名前を変更した場合は、「無視するユーザ」にその名前を加えてください。
 
-![gs3](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/gs3.png)
+![gs3](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/gs3.png)
 
 
 # 動かす
@@ -131,9 +131,9 @@ Slackの#timesheetsチャンネルで「おはよう」と発言すると、先�
 
 週の休日は「Day Off」の欄に,(カンマ)区切りで入力します。
 
-![gs2](https://raw.githubusercontent.com/masuidrive/miyamoto/master/docs/images/gs2.png)
+![gs2](https://raw.githubusercontent.com/SKAhack/miyamoto/master/docs/images/gs2.png)
 
-これで設置が終わりました。どんなメッセージに反応するかは、[timesheets.js](https://github.com/masuidrive/miyamoto/blob/master/scripts/timesheets.js#L29)の正規表現を読み解いてください。
+これで設置が終わりました。どんなメッセージに反応するかは、[timesheets.js](https://github.com/SKAhack/miyamoto/blob/master/scripts/timesheets.js#L29)の正規表現を読み解いてください。
 
 また、このシートを編集不可で共有することで、勤務時間の確認などが簡単に行えるようになります。
 
