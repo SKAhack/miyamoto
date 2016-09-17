@@ -2,7 +2,8 @@
 // Timesheets = loadTimesheets();
 
 loadGSTimesheets = function () {
-  var offset = 6;
+  var offset = 3;
+  var columnRange;
 
   var GSTimesheets = function(spreadsheet, users, settings, sheetname) {
     if(!sheetname) sheetname = 'kintai';
@@ -19,11 +20,9 @@ loadGSTimesheets = function () {
         { name: '出勤' },
         { name: '退勤' },
         { name: 'ノート' },
-      ],
-      properties: [
-        { name: 'DayOff', value: '土,日', comment: '← 月,火,水みたいに入力してください。アカウント停止のためには「全部」と入れてください。'},
       ]
     };
+    columnRange = ['A', String.fromCharCode(65 + this.scheme.columns.length - 1)];
 
     this.sheet = this._getSheet(sheetname);
   };
@@ -44,15 +43,8 @@ loadGSTimesheets = function () {
     else {
       // 中身が無い場合は新規作成
       if(sheet.getLastRow() == 0) {
-        // 設定部の書き出し
-        var properties = [["Properties count", this.scheme.properties.length, null]];
-        this.scheme.properties.forEach(function(s) {
-          properties.push([s.name, s.value, s.comment]);
-        });
-        sheet.getRange("A1:C"+(properties.length)).setValues(properties);
-
         // ヘッダの書き出し
-        var rowNo = properties.length + 2;
+        var rowNo = 1;
         var cols = this.scheme.columns.map(function(c) { return c.name; });
         sheet.getRange("A"+rowNo+":"+String.fromCharCode(65 + cols.length - 1)+rowNo).setValues([cols]);
       }
@@ -68,7 +60,7 @@ loadGSTimesheets = function () {
       return this.keys;
     }
 
-    this.keys = _.reduce(sheet.getRange('A4:E4').getValues()[0], function(memo, v, i) {
+    this.keys = _.reduce(sheet.getRange(getRowRange(1)).getValues()[0], function(memo, v, i) {
       memo[v] = i;
       return memo;
     }, {});
@@ -105,7 +97,7 @@ loadGSTimesheets = function () {
     var data = [username, DateUtils.toDate(date), row.signIn, row.signOut, row.note].map(function(v) {
       return v == null ? '' : v;
     });
-    sheet.getRange("A"+rowNo+":"+String.fromCharCode(65 + this.scheme.columns.length - 1)+rowNo).setValues([data]);
+    sheet.getRange(getRowRange(rowNo)).setValues([data]);
 
     // clear cache
     this._all = undefined;
@@ -115,10 +107,10 @@ loadGSTimesheets = function () {
     if(this._all) return this._all;
 
     var lastRow = this.sheet.getLastRow();
-    if(lastRow <= 4) lastRow = offset;
+    if(lastRow <= offset) lastRow = offset;
     var keys = this._getKeys(this.sheet);
 
-    var vs = this.sheet.getRange('A' + offset + ':E' + lastRow).getValues();
+    var vs = this.sheet.getRange(getRange(offset, lastRow)).getValues();
     this._all = _.chain(vs)
       .map(function(v, k) {
         return {
@@ -162,6 +154,14 @@ loadGSTimesheets = function () {
     var user = this.users.get(username);
     return DateUtils.parseWday(user.dayoff);
   };
+
+  function getRowRange(rowNo) {
+    return getRange(rowNo, rowNo);
+  }
+
+  function getRange(rowA, rowB) {
+    return columnRange[0] + rowA + ':' + columnRange[1] + rowB;
+  }
 
   return GSTimesheets;
 };
