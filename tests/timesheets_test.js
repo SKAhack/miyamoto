@@ -36,7 +36,7 @@ QUnit.test( "Timesheets", function(assert) {
     set: function(username, date, params) {
       var row = this.get(username, date);
       row.user = username;
-      _.extend(row, _.pick(params, 'signIn', 'signOut', 'note'));
+      _.extend(row, _.pick(params, 'user', 'signIn', 'signOut', 'note'));
       this.data[username][String(DateUtils.toDate(date))] = row;
       return row;
     },
@@ -271,6 +271,4 @@ QUnit.test( "Timesheets", function(assert) {
   storageTest({'test1': test1, 'test2': {}}, function(msgTest) {
     msgTest('test1', '__confirmSignOut__', []);
   });
-
-
 });
