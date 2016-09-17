@@ -159,7 +159,8 @@ loadGSTimesheets = function () {
 
   // 休みの曜日を数字で返す
   GSTimesheets.prototype.getDayOff = function(username) {
-    return DateUtils.parseWday(this.sheet.getRange("B2").getValue());
+    var user = this.users.get(username);
+    return DateUtils.parseWday(user.dayoff);
   };
 
   return GSTimesheets;

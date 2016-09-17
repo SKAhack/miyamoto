@@ -3,6 +3,12 @@
 
 loadUsers = function () {
   var offset = 3;
+  var defaultParams = {
+    name: '',
+    dayoff: '土,日'
+  };
+  var columnRange = ['A', String.fromCharCode(65 + _.keys(defaultParams).length - 1)];
+
   var Users = function(spreadsheet, sheetname) {
     if(!sheetname) sheetname = '_ユーザー';
 
@@ -13,7 +19,7 @@ loadUsers = function () {
     this.sheet = spreadsheet.getSheetByName(sheetname);
     if(!this.sheet) {
       this.sheet = spreadsheet.insertSheet(sheetname);
-      this.sheet.getRange('A1').setValue('名前');
+      this.sheet.getRange('A1:B1').setValues([['名前', '休日']]);
     }
   };
 
@@ -35,7 +41,9 @@ loadUsers = function () {
     return res;
   };
 
-  Users.prototype.set = function(username) {
+  Users.prototype.set = function(username, params) {
+    if(!params) params = {};
+
     var row = this.get(username);
     if(row.rowNo) {
       var rowNo = row.rowNo;
@@ -44,9 +52,10 @@ loadUsers = function () {
       var rowNo = getLastRow(this.sheet, offset);
       if(this.getAll().length > 0) rowNo += 1;
     }
+    row = _.assign({}, defaultParams, row);
 
-    var range = this.sheet.getRange('A' + rowNo);
-    range.setValue(username);
+    var range = this.sheet.getRange(columnRange[0] + rowNo + ':' + columnRange[1] + rowNo);
+    range.setValues([[ username, row.dayoff ]]);
     this._users[username] = undefined;
     this._all = undefined;
   };
@@ -59,12 +68,13 @@ loadUsers = function () {
     if(this._all) return this._all;
 
     var rowNo = getLastRow(this.sheet, offset);
-    var vs = this.sheet.getRange('A' + offset + ':A' + rowNo).getValues();
+    var vs = this.sheet.getRange(columnRange[0] + offset + ':' + columnRange[1] + rowNo).getValues();
     this._all = _.chain(vs)
       .map(function(v, k) {
         return {
           rowNo: k + offset,
-          name: v[0]
+          name: v[0],
+          dayoff: v[1]
         };
       })
       .filter(function(v) { return v.name !== ''; })
