@@ -22,7 +22,8 @@ var init = function() {
     var settings = new GSProperties(spreadsheet);
     var template = new GSTemplate(spreadsheet);
     var slack = new Slack(settings.get('Slack Incoming URL'), template, settings);
-    var storage = new GSTimesheets(spreadsheet, settings);
+    var users = new Users(spreadsheet);
+    var storage = new GSTimesheets(spreadsheet, users, settings);
     var timesheets = new Timesheets(storage, settings, slack);
     return({
       receiver: slack,

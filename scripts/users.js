@@ -27,7 +27,9 @@ loadUsers = function () {
     });
 
     var res = {};
-    if(row) res = row;
+    if(row) {
+      res = row;
+    }
 
     this._users[username] = res;
     return res;
@@ -46,6 +48,10 @@ loadUsers = function () {
     range.setValue(username);
     this._users[username] = undefined;
     this._all = undefined;
+  };
+
+  Users.prototype.getUsernames = function() {
+    return _.map(this.getAll(), function(v) { return v.name; });
   };
 
   Users.prototype.getAll = function() {

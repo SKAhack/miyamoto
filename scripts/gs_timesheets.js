@@ -3,8 +3,10 @@
 
 loadGSTimesheets = function () {
   var offset = 6;
-  var GSTimesheets = function(spreadsheet, settings) {
+
+  var GSTimesheets = function(spreadsheet, users, settings) {
     this.spreadsheet = spreadsheet;
+    this.users = users;
     this.settings = settings;
     this._sheets = {};
 
@@ -70,7 +72,7 @@ loadGSTimesheets = function () {
   };
 
   GSTimesheets.prototype.get = function(username, date, sheetname) {
-    if(!sheetname) sheetname = 'kintai'
+    if(!sheetname) sheetname = 'kintai';
     var sheet = this._getSheet(sheetname);
     var keys = this._getKeys(sheet);
     var t = date.getTime();
@@ -102,9 +104,10 @@ loadGSTimesheets = function () {
   };
 
   GSTimesheets.prototype.set = function(username, date, params, sheetname) {
-    if(!sheetname) sheetname = 'kintai'
+    if(!sheetname) sheetname = 'kintai';
+    var user = this.findUserAndCreate(username);
     var row = this.get(username, date, sheetname);
-    _.extend(row, _.pick(params, 'user', 'signIn', 'signOut', 'note'));
+    _.extend(row, _.pick(params, 'signIn', 'signOut', 'note'));
 
     var sheet = this._getSheet(sheetname);
     if(row.rowNo) {
@@ -112,6 +115,7 @@ loadGSTimesheets = function () {
     } else {
       var rowNo = sheet.getLastRow() + 1;
     }
+    if(rowNo <= offset) rowNo = offset;
 
     var data = [username, DateUtils.toDate(date), row.signIn, row.signOut, row.note].map(function(v) {
       return v == null ? '' : v;
@@ -119,11 +123,18 @@ loadGSTimesheets = function () {
     sheet.getRange("A"+rowNo+":"+String.fromCharCode(65 + this.scheme.columns.length - 1)+rowNo).setValues([data]);
   };
 
+  GSTimesheets.prototype.findUserAndCreate = function(username) {
+    var user = this.users.get(username);
+    if(user.name) {
+      return user;
+    }
+
+    this.users.set(username);
+    return this.users.get(username);
+  };
+
   GSTimesheets.prototype.getUsers = function() {
-    return _.compact(_.map(this.spreadsheet.getSheets(), function(s) {
-      var name = s.getName();
-      return String(name).substr(0, 1) == '_' ? undefined : name;
-    }));
+    return this.users.getUsernames();
   };
 
   GSTimesheets.prototype.getByDate = function(date) {
